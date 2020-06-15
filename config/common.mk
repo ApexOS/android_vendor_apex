@@ -53,6 +53,10 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
 endif
 endif
 
+# Some permissions
+PRODUCT_COPY_FILES += \
+    vendor/apex/config/permissions/privapp-permissions-lineagehw.xml:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/permissions/privapp-permissions-lineagehw.xml
+
 # Apex-specific init rc file
 PRODUCT_COPY_FILES += \
     vendor/apex/prebuilt/common/etc/init/init.apex-system_ext.rc:$(TARGET_COPY_OUT_SYSTEM_EXT)/etc/init/init.apex-system_ext.rc
