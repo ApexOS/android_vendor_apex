@@ -236,6 +236,7 @@ PRODUCT_PACKAGE_OVERLAYS += \
     vendor/apex/overlay/common \
 
 PRODUCT_PACKAGES += \
+    CustomFontPixelLauncherOverlay \
     DocumentsUIOverlay \
     NetworkStackOverlay
 
