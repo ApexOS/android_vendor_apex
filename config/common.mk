@@ -178,6 +178,9 @@ PRODUCT_SYSTEM_PROPERTIES += \
 PRODUCT_COPY_FILES += \
     vendor/apex/prebuilt/common/bin/clean_cache.sh:system/bin/clean_cache.sh
 
+# Pixel customization
+TARGET_SUPPORTS_GOOGLE_BATTERY ?= false
+
 # SystemUI
 PRODUCT_DEXPREOPT_SPEED_APPS += \
     CarSystemUI \
