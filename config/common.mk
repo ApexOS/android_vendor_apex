@@ -262,3 +262,4 @@ PRODUCT_EXTRA_RECOVERY_KEYS += \
     vendor/apex/build/target/product/security/apex
 
 include vendor/apex/config/version.mk
+include vendor/apex/config/pixel_props.mk
