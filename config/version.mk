@@ -1,38 +1,60 @@
-PRODUCT_VERSION_MAJOR = 21
-PRODUCT_VERSION_MINOR = 0
+# Copyright (C) 2024 ApexOS
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-ifeq ($(LINEAGE_VERSION_APPEND_TIME_OF_DAY),true)
-    LINEAGE_BUILD_DATE := $(shell date -u +%Y%m%d_%H%M%S)
-else
-    LINEAGE_BUILD_DATE := $(shell date -u +%Y%m%d)
-endif
+ANDROID_VERSION := 14
+APEXVERSION := 1.0
 
-# Set LINEAGE_BUILDTYPE from the env RELEASE_TYPE, for jenkins compat
+APEX_BUILD_TYPE ?= UNOFFICIAL
+APEX_MAINTAINER ?= UNKNOWN
+APEX_DATE_YEAR := $(shell date -u +%Y)
+APEX_DATE_MONTH := $(shell date -u +%m)
+APEX_DATE_DAY := $(shell date -u +%d)
+APEX_DATE_HOUR := $(shell date -u +%H)
+APEX_DATE_MINUTE := $(shell date -u +%M)
+APEX_BUILD_DATE := $(APEX_DATE_YEAR)$(APEX_DATE_MONTH)$(APEX_DATE_DAY)-$(APEX_DATE_HOUR)$(APEX_DATE_MINUTE)
+TARGET_PRODUCT_SHORT := $(subst apex_,,$(APEX_BUILD))
 
-ifndef LINEAGE_BUILDTYPE
-    ifdef RELEASE_TYPE
-        # Starting with "LINEAGE_" is optional
-        RELEASE_TYPE := $(shell echo $(RELEASE_TYPE) | sed -e 's|^LINEAGE_||g')
-        LINEAGE_BUILDTYPE := $(RELEASE_TYPE)
+# OFFICIAL_DEVICES
+ifeq ($(APEX_BUILD_TYPE), OFFICIAL)
+  LIST = $(shell cat vendor/apex/config/apex.devices)
+    ifeq ($(filter $(APEX_BUILD), $(LIST)), $(APEX_BUILD))
+      IS_OFFICIAL=true
+      APEX_BUILD_TYPE := OFFICIAL
+    endif
+    ifneq ($(IS_OFFICIAL), true)
+      APEX_BUILD_TYPE := UNOFFICIAL
+      $(error Device is not official "$(APEX_BUILD)")
     endif
 endif
 
-# Filter out random types, so it'll reset to UNOFFICIAL
-ifeq ($(filter RELEASE NIGHTLY SNAPSHOT EXPERIMENTAL,$(LINEAGE_BUILDTYPE)),)
-    LINEAGE_BUILDTYPE := UNOFFICIAL
-    LINEAGE_EXTRAVERSION :=
+APEX_VERSION := $(APEXVERSION)-$(APEX_BUILD)-$(APEX_BUILD_DATE)-VANILLA-$(APEX_BUILD_TYPE)
+ifeq ($(WITH_GAPPS), true)
+APEX_VERSION := $(APEXVERSION)-$(APEX_BUILD)-$(APEX_BUILD_DATE)-GAPPS-$(APEX_BUILD_TYPE)
 endif
+APEX_MOD_VERSION :=$(ANDROID_VERSION)-$(APEXVERSION)
+APEX_DISPLAY_VERSION := ApexOS-$(APEXVERSION)-$(APEX_BUILD_TYPE)
+APEX_DISPLAY_BUILDTYPE := $(APEX_BUILD_TYPE)
+APEX_FINGERPRINT := ApexOS/$(APEX_MOD_VERSION)/$(TARGET_PRODUCT_SHORT)/$(APEX_BUILD_DATE)
 
-ifeq ($(LINEAGE_BUILDTYPE), UNOFFICIAL)
-    ifneq ($(TARGET_UNOFFICIAL_BUILD_ID),)
-        LINEAGE_EXTRAVERSION := -$(TARGET_UNOFFICIAL_BUILD_ID)
-    endif
-endif
-
-LINEAGE_VERSION_SUFFIX := $(LINEAGE_BUILD_DATE)-$(LINEAGE_BUILDTYPE)$(LINEAGE_EXTRAVERSION)-$(LINEAGE_BUILD)
-
-# Internal version
-LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(LINEAGE_VERSION_SUFFIX)
-
-# Display version
-LINEAGE_DISPLAY_VERSION := $(PRODUCT_VERSION_MAJOR)-$(LINEAGE_VERSION_SUFFIX)
+# APEX System Version
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+  ro.apex.version=$(APEX_DISPLAY_VERSION) \
+  ro.apex.build.status=$(APEX_BUILD_TYPE) \
+  ro.modversion=$(APEX_MOD_VERSION) \
+  ro.apex.build.date=$(APEX_BUILD_DATE) \
+  ro.apex.buildtype=$(APEX_BUILD_TYPE) \
+  ro.apex.fingerprint=$(APEX_FINGERPRINT) \
+  ro.apex.device=$(APEX_BUILD) \
+  org.apex.version=$(APEXVERSION) \
+  ro.apex.maintainer=$(APEX_MAINTAINER)
